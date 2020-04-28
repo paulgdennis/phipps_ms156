@@ -1,0 +1,347 @@
+---
+title: "Phipps_ms156"
+author: "PGD"
+date: "28/04/2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is the analysis for Bodie's mice
+
+# Questions
+
+> Mother focused
+
+1) Is the MB of mothers different at the time of mating?
+  
+2) Is the MB of mothers different at the time of birth?
+  
+3) Is the MB of mothers different at the time the pups are sacrificed?
+  
+4) Is the MB of mothers different over time (gestation, birth, and pup sacrifice)?
+
+> Pup focused 
+  
+5) Is the MB of pups different at the time of PVM infection (PND7)?
+
+6) Is the MB of pups different in the early post natal period (PND3)?
+
+7) Is the MB of pups different over time (PND3-7)?
+  
+> Cross fostering focussed
+
+8) What is the effect of cross fostering on the MB of pups at PND17?
+
+First we got the data in
+
+
+```{r}
+
+# Data input and subsetting
+
+# Get environmental metadata
+
+env <- read.table('../Data/env_with_metadata.csv', header=TRUE, sep=',', row.names=1)
+
+# Get OTU table
+
+otu.tmp <- read.table('../Data/otu_with_tax_1600.csv', header=TRUE, sep=',', row.names=1)
+otu <- t(otu.tmp[,-76]/1600) # transpose and divide by 1600 to get relative abundances
+
+taxonomy <- otu.tmp[,76] # Make a list of OTUs with the respective taxonomy
+taxonomy <- as.data.frame(taxonomy)
+row.names(taxonomy) <- row.names(otu.tmp)
+
+row.names(otu) == row.names(env)
+
+# Subset to questions
+
+env1 <- env[env$Q1 == 1,]
+env2 <- env[env$Q2 == 1,]
+env3 <- env[env$Q3 == 1,]
+env4 <- env[env$Q4 == 1,]
+env5 <- env[env$Q5 == 1,]
+env6 <- env[env$Q6 == 1,]
+env7 <- env[env$Q7 == 1,]
+env8 <- env[env$Q8 == 1,]
+
+otu1 <- otu[env$Q1 == 1,]
+otu2 <- otu[env$Q2 == 1,]
+otu3 <- otu[env$Q3 == 1,]
+otu4 <- otu[env$Q4 == 1,]
+otu5 <- otu[env$Q5 == 1,]
+otu6 <- otu[env$Q6 == 1,]
+otu7 <- otu[env$Q7 == 1,]
+otu8 <- otu[env$Q8 == 1,]
+
+```
+
+# Load libraries and source custom functions
+
+```{r}
+source("Functions/Functions.R")
+library(sciplot)
+```
+
+
+Then we looked at Alpha diversity
+
+```{r}
+### Alpha diversity
+
+library(vegan)
+library(sciplot)
+
+# Q1
+anova(lm(Chao1 ~ factor(Diet), data=env1))
+anova(lm(Sobs ~ factor(Diet), data=env1))
+#anova(lm(Simp ~ factor(Diet), data=env1))
+anova(lm(Shan ~ factor(Diet), data=env1))
+anova(lm(PD ~ factor(Diet), data=env1))
+
+# Q2
+anova(lm(Chao1 ~ factor(Diet), data=env2))
+anova(lm(Sobs ~ factor(Diet), data=env2))
+#anova(lm(Simp ~ factor(Diet), data=env2))
+anova(lm(Shan ~ factor(Diet), data=env2))
+anova(lm(PD ~ factor(Diet), data=env2))
+
+# Q3
+anova(lm(Chao1 ~ factor(Diet), data=env3))
+anova(lm(Sobs ~ factor(Diet), data=env3))
+#anova(lm(Simp ~ factor(Diet), data=env3))
+anova(lm(Shan ~ factor(Diet), data=env3))
+anova(lm(PD ~ factor(Diet), data=env3))
+
+# Q4
+anova(lm(Chao1 ~ factor(Diet) * factor(Time), data=env4))
+anova(lm(Sobs ~ factor(Diet) * factor(Time), data=env4))
+#anova(lm(Simp ~ factor(Diet) * factor(Time), data=env4))
+anova(lm(Shan ~ factor(Diet) * factor(Time), data=env4))
+anova(lm(PD ~ factor(Diet) * factor(Time), data=env4))
+
+# Q5
+anova(lm(Chao1 ~ factor(Diet), data=env5))
+anova(lm(Sobs ~ factor(Diet), data=env5))
+#anova(lm(Simp ~ factor(Diet), data=env5))
+anova(lm(Shan ~ factor(Diet), data=env5))
+anova(lm(PD ~ factor(Diet), data=env5))
+
+# Q6
+anova(lm(Chao1 ~ factor(Diet), data=env6))
+anova(lm(Sobs ~ factor(Diet), data=env6))
+#anova(lm(Simp ~ factor(Diet), data=env6))
+anova(lm(Shan ~ factor(Diet), data=env6))
+anova(lm(PD ~ factor(Diet), data=env6))
+
+# Q7
+anova(lm(Chao1 ~ factor(Diet) * factor(Time), data=env7))
+anova(lm(Sobs ~ factor(Diet) * factor(Time), data=env7))
+#anova(lm(Simp ~ factor(Diet) * factor(Time), data=env7))
+anova(lm(Shan ~ factor(Diet) * factor(Time), data=env7))
+anova(lm(PD ~ factor(Diet) * factor(Time), data=env7))
+
+# Q8
+anova(lm(Chao1 ~ factor(Cross.foster), data=env8))
+anova(lm(Sobs ~ factor(Cross.foster), data=env8))
+#anova(lm(Simp ~ factor(Cross.foster), data=env8))
+anova(lm(Shan ~ factor(Cross.foster), data=env8))
+anova(lm(PD ~ factor(Cross.foster), data=env8))
+
+
+
+#Tukey's Honest Significant Difference Post hoc's
+
+# Q4
+TukeyHSD(aov(Chao1 ~ factor(Diet) * factor(Time), data=env4))
+TukeyHSD(aov(Sobs ~ factor(Diet) * factor(Time), data=env4))
+#anova(lm(Simp ~ factor(Diet) * factor(Time), data=env4))
+TukeyHSD(aov(Shan ~ factor(Diet) * factor(Time), data=env4))
+TukeyHSD(aov(PD ~ factor(Diet) * factor(Time), data=env4))
+
+# Q7
+TukeyHSD(aov(Chao1 ~ factor(Diet) * factor(Time), data=env7))
+TukeyHSD(aov(Sobs ~ factor(Diet) * factor(Time), data=env7))
+#anova(lm(Simp ~ factor(Diet) * factor(Time), data=env7))
+TukeyHSD(aov(Shan ~ factor(Diet) * factor(Time), data=env7))
+TukeyHSD(aov(PD ~ factor(Diet) * factor(Time), data=env7))
+
+# Q8
+TukeyHSD(aov(Chao1 ~ factor(Cross.foster), data=env8))
+TukeyHSD(aov(Sobs ~ factor(Cross.foster), data=env8))
+#anova(lm(Simp ~ factor(Cross.foster), data=env8))
+TukeyHSD(aov(Shan ~ factor(Cross.foster), data=env8))
+TukeyHSD(aov(PD ~ factor(Cross.foster), data=env8))
+
+
+# Plots
+
+
+# Q1
+bargraph.CI(x.factor = factor(Diet), response = Chao1, data=env1, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Sobs, data=env1, legend = TRUE)
+#bargraph.CI(x.factor = factor(Diet), response = Simp, data=env1, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Shan, data=env1, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = PD, data=env1, legend = TRUE)
+
+# Q2
+bargraph.CI(x.factor = factor(Diet), response = Chao1, data=env2, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Sobs, data=env2, legend = TRUE)
+#bargraph.CI(x.factor = factor(Diet), response = Simp, data=env2, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Shan, data=env2, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = PD, data=env2, legend = TRUE)
+
+# Q3
+bargraph.CI(x.factor = factor(Diet), response = Chao1, data=env3, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Sobs, data=env3, legend = TRUE)
+#bargraph.CI(x.factor = factor(Diet), response = Simp, data=env3, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Shan, data=env3, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = PD, data=env3, legend = TRUE)
+
+# Q4
+bargraph.CI(x.factor = factor(Diet), response = Chao1, group = Time, data=env4, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Sobs, group = Time, data=env4, legend = TRUE)
+#bargraph.CI(x.factor = factor(Diet), response = Simp, group = Time, data=env4, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Shan, group = Time, data=env4, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = PD, group = Time, data=env4, legend = TRUE)
+
+# Q5
+bargraph.CI(x.factor = factor(Diet), response = Chao1, data=env5, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Sobs, data=env5, legend = TRUE)
+#bargraph.CI(x.factor = factor(Diet), response = Simp, data=env5, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Shan, data=env5, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = PD, data=env5, legend = TRUE)
+
+# Q6
+bargraph.CI(x.factor = factor(Diet), response = Chao1, data=env6, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Sobs, data=env6, legend = TRUE)
+#bargraph.CI(x.factor = factor(Diet), response = Simp, data=env6, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Shan, data=env6, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = PD, data=env6, legend = TRUE)
+
+# Q7
+bargraph.CI(x.factor = factor(Diet), response = Chao1, group = Time, data=env7, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Sobs, group = Time, data=env7, legend = TRUE)
+#bargraph.CI(x.factor = factor(Diet), response = Simp, group = Time, data=env7, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = Shan, group = Time, data=env7, legend = TRUE)
+bargraph.CI(x.factor = factor(Diet), response = PD, group = Time, data=env7, legend = TRUE)
+
+# Q8
+bargraph.CI(x.factor = factor(Cross.foster), response = Chao1, data=env8, legend = TRUE)
+bargraph.CI(x.factor = factor(Cross.foster), response = Sobs, data=env8, legend = TRUE)
+#bargraph.CI(x.factor = factor(Cross.foster), response = Simp, data=env8, legend = TRUE)
+bargraph.CI(x.factor = factor(Cross.foster), response = Shan, data=env8, legend = TRUE)
+bargraph.CI(x.factor = factor(Cross.foster), response = PD, data=env8, legend = TRUE)
+
+```
+
+...and then beta diversity, which first needed some custom functions
+
+```{r}
+#  _____                 _   _                 
+# |  ___|   _ _ __   ___| |_(_) ___  _ __  ___ 
+# | |_ | | | | '_ \ / __| __| |/ _ \| '_ \/ __|
+# |  _|| |_| | | | | (__| |_| | (_) | | | \__ \
+# |_|   \__,_|_| |_|\___|\__|_|\___/|_| |_|___/
+#
+# Paul Dennis 
+
+## Axis percent 
+# Returns the percentage varation on ordination axes
+
+axis.percent <- function(ordination){
+  round((100*eigenvals(ordination)[1:2]/ordination$tot.chi[[1]]),digits=2)
+}
+
+# END
+
+
+
+## pcoa
+# Makes a PCoA ordination object
+pcoa <- function(ord){
+  cmdscale(dist(ord,'euc'), k=(nrow(ord)-1), eig=TRUE)
+}
+
+## axis.percent.pcoa 
+# Returns the percentage varation on ordination axes
+axis.percent.pcoa <- function(ordination){
+  round(as.vector(eigenvals(ordination)/sum(eigenvals(ordination)))[1:2]*100,digits=2)
+}
+
+## custom.plot.pcoa
+# Plots a PCoA ordination with group enrichment
+
+custom.plot.pcoa <- function(ord,group,title,plottype){
+  ordiplot(scores(ord, choices=c(1,2)), type=plottype, 
+           xlab=paste("PCoA1 (",axis.percent.pcoa(
+             ord)[[1]],"%)",sep=""),
+           ylab=paste("PCoA2 (",axis.percent.pcoa(ord)[[2]],"%)",sep=""),
+           main=title)
+  ordiellipse(ord,group,
+              kind='sd')
+  #conf=0.95)
+  points(ord$points, pch=21, cex=3, bg=factor(group))    
+  abline(h=0, lty=3)
+  abline(v=0, lty=3)
+  legend("topright",legend=unique(factor(group)),pch=19,col=unique(factor(group)))
+}
+
+
+```
+
+
+```{r}
+### Beta Diversity
+
+library(vegan)
+
+# Q1
+adonis(sqrt(otu1) ~ factor(Diet), data = env1, method='euc')
+pcoa1 <- pcoa(sqrt(otu1))
+custom.plot.pcoa(pcoa1,group = factor(env1$Diet), plottype = "t", title = "Q1")
+
+# Q2
+adonis(sqrt(otu2) ~ factor(Diet), data = env2, method='euc')
+pcoa2 <- pcoa(sqrt(otu2))
+custom.plot.pcoa(pcoa2,group = factor(env2$Diet), plottype = "t", title = "Q2")
+
+# Q3
+adonis(sqrt(otu3) ~ factor(Diet), data = env3, method='euc')
+pcoa3 <- pcoa(sqrt(otu3))
+custom.plot.pcoa(pcoa3,group = factor(env3$Diet), plottype = "t", title = "Q3")
+
+# Q4
+adonis(sqrt(otu4) ~ factor(Diet) * factor(Time), data = env4, method='euc')
+pcoa4 <- pcoa(sqrt(otu4))
+env4$Diet.Time = paste(env4$Diet,env4$Time, sep="." )
+custom.plot.pcoa(pcoa4,group = factor(env4$Diet.Time), plottype = "t", title = "Q4")
+
+# Q5
+adonis(sqrt(otu5) ~ factor(Diet), data = env5, method='euc')
+pcoa5 <- pcoa(sqrt(otu5))
+custom.plot.pcoa(pcoa5,group = factor(env5$Diet), plottype = "t", title = "Q5")
+
+# Q6
+adonis(sqrt(otu6) ~ factor(Diet), data = env6, method='euc')
+pcoa6 <- pcoa(sqrt(otu6))
+custom.plot.pcoa(pcoa6,group = factor(env6$Diet), plottype = "t", title = "Q6")
+
+# Q7
+adonis(sqrt(otu7) ~ factor(Diet) * factor(Time), data = env7, method='euc')
+pcoa7 <- pcoa(sqrt(otu7))
+env7$Diet.Time = paste(env7$Diet,env7$Time, sep="." )
+custom.plot.pcoa(pcoa7,group = factor(env7$Diet.Time), plottype = "t", title = "7")
+
+# Q8
+adonis(sqrt(otu8) ~ factor(Cross.foster), data = env8, method='euc')
+pcoa8 <- pcoa(sqrt(otu8))
+custom.plot.pcoa(pcoa8,group = factor(env8$Cross.foster), plottype = "t", title = "Q8")
+
+```
+
