@@ -2,9 +2,7 @@
 title: "Phipps_ms156"
 author: "PGD"
 date: "28/04/2020"
-output:
-  html_document:
-    df_print: paged
+output: word_document # changed to word doc
 ---
 
 ```{r setup, include=FALSE}
@@ -39,23 +37,25 @@ This is the analysis for Bodie's mice
 
 First we got the data in
 
-
 ```{r}
 
 # Data input and subsetting
 
 # Get environmental metadata
 
-env <- read.table('../Data/env_with_metadata.csv', header=TRUE, sep=',', row.names=1)
+env <- read.table('../../Data/env_with_metadata.csv', header=TRUE, sep=',', row.names=1) # updated metadata path
 
 # Get OTU table
 
-otu.tmp <- read.table('../Data/otu_with_tax_1600.csv', header=TRUE, sep=',', row.names=1)
+otu.tmp <- read.table('../../Data/otu_with_tax_1600.csv', header=TRUE, sep=',', row.names=1) # updated otu table path
 otu <- t(otu.tmp[,-76]/1600) # transpose and divide by 1600 to get relative abundances
 
 taxonomy <- otu.tmp[,76] # Make a list of OTUs with the respective taxonomy
 taxonomy <- as.data.frame(taxonomy)
 row.names(taxonomy) <- row.names(otu.tmp)
+# why not generalise to?:
+# taxonomy <- as.data.frame(otu.tmp[,'taxonomy'])
+# colnames(taxonomy) <- 'taxonomy'
 
 row.names(otu) == row.names(env)
 
@@ -84,7 +84,7 @@ otu8 <- otu[env$Q8 == 1,]
 # Load libraries and source custom functions
 
 ```{r}
-source("Functions/Functions.R")
+source("../Functions/Functions.R") # updated functions path
 library(sciplot)
 ```
 
